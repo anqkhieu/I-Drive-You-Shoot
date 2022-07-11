@@ -1,5 +1,6 @@
 using UnityEngine;
 using System.Collections;
+using System.Collections.Generic;
 
 public class ZzzLog : MonoBehaviour
 {
@@ -7,7 +8,7 @@ public class ZzzLog : MonoBehaviour
     Queue myLogQueue = new Queue();
 
     void Start() {
-        //Debug.Log("Started up logging.");
+        DontDestroyOnLoad(this.gameObject);
     }
 
     void OnEnable() {

@@ -13,7 +13,7 @@ public class MainMenuManager : MonoBehaviourPunCallbacks
     public GameObject MotorcycleSprite; 
     public GameObject SearchingText; 
 
-    private const int MaxPlayersPerRoom = 2; 
+    [SerializeField] private const int MaxPlayersPerRoom = 2; 
 
     void Awake() => PhotonNetwork.AutomaticallySyncScene = true; 
 
@@ -36,7 +36,7 @@ public class MainMenuManager : MonoBehaviourPunCallbacks
             MotorcycleSprite.GetComponent<FloatBehavior>().enabled = true;
 
         } else {
-            EnterLobbyBtn.GetComponentInChildren<Text>().text = "ERROR: RESTART.";
+            EnterLobbyBtn.GetComponentInChildren<Text>().text = "ERROR";
         }
 
     }
@@ -45,12 +45,11 @@ public class MainMenuManager : MonoBehaviourPunCallbacks
     {
         SearchingText.SetActive(false);
         EnterLobbyBtn.onClick.AddListener(EnterLobby); 
-        PhotonNetwork.ConnectUsingSettings();
+        if (PhotonNetwork.IsConnected == false) { PhotonNetwork.ConnectUsingSettings(); }
     }
 
     void Update() {
-        if (PhotonNetwork.IsConnected) {
-        }
+
     }
 
     void SavePlayerName(string playerName) {
@@ -69,5 +68,26 @@ public class MainMenuManager : MonoBehaviourPunCallbacks
     public override void OnJoinedRoom() {
         int playerCount = PhotonNetwork.CurrentRoom.PlayerCount; 
         Debug.Log("Client [" + PhotonNetwork.NickName + "] successfully joined room. (Num Players: " + playerCount.ToString() + ")");
+
+        // feedback for the player who just joined
+        if (playerCount == MaxPlayersPerRoom) {
+            Debug.Log("Duo found, game ready to begin!");
+            SearchingText.GetComponentInChildren<Text>().text = "DUO FOUND. GAME STARTING.";
+            Invoke("GoToGameplay", 2f);
+        }
+    }
+
+    public override void OnPlayerEnteredRoom(Player player) {
+        // feedback for the player who was already in lobby
+        if(PhotonNetwork.CurrentRoom.PlayerCount == MaxPlayersPerRoom) {
+            PhotonNetwork.CurrentRoom.IsOpen = false; 
+            Debug.Log("Duo found, game ready to begin!");
+            SearchingText.GetComponentInChildren<Text>().text = "DUO FOUND. GAME STARTING.";
+            Invoke("GoToGameplay", 2f);
+        }
+    }
+
+    void GoToGameplay() {
+        PhotonNetwork.LoadLevel("Game");
     }
 }
